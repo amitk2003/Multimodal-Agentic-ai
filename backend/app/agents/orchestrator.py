@@ -237,6 +237,10 @@ Return JSON with keys: headline, key_highlights (list), attention_items (list), 
             })
             actions.append("Consider initiating close workflow")
 
+            # Auto-initiate for autonomous mode
+            await self._initiate_full_close(period)
+            actions.append("Automatically initiated month-end close workflow")
+
         return {
             "status": "completed",
             "findings": findings,

@@ -210,6 +210,10 @@ async def autonomous_scheduler():
                 await run_monitoring()
                 last_monitor_run = now
 
+            # Process any pending workflow tasks
+            from app.services.scheduler import process_workflow_tasks
+            await process_workflow_tasks()
+
             await asyncio.sleep(30)  # Check every 30 seconds
 
         except asyncio.CancelledError:

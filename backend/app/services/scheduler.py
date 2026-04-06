@@ -159,3 +159,70 @@ async def run_monitoring():
         await orchestrator.run(action="monitor_data")
     finally:
         db.close()
+
+
+async def process_workflow_tasks():
+    """Pick up and execute pending agent tasks from the database."""
+    db = SessionLocal()
+    try:
+        from app.services.workflow_engine import WorkflowEngine, WorkflowState
+        from app.models.agent import WorkflowRun
+
+        engine = WorkflowEngine(db)
+
+        # Find all workflows that are currently running
+        active_workflows = (
+            db.query(WorkflowRun)
+            .filter_by(status=WorkflowState.RUNNING.value)
+            .all()
+        )
+
+        if not active_workflows:
+            return
+
+        for workflow in active_workflows:
+            # Get next batch of tasks for this workflow
+            next_tasks = engine.get_next_tasks(workflow.id)
+
+            if not next_tasks:
+                # If no pending tasks but workflow is running, it might have finished all tasks
+                # Check if all tasks are actually done
+                from app.models.agent import AgentTask
+                total = db.query(AgentTask).filter_by(workflow_run_id=workflow.id).count()
+                completed = db.query(AgentTask).filter_by(workflow_run_id=workflow.id).filter(AgentTask.status.in_(["completed", "failed", "skipped"])).count()
+
+                if total > 0 and total == completed:
+                    workflow.status = WorkflowState.COMPLETED.value
+                    db.commit()
+                continue
+
+            # Execute tasks (could be in parallel but for safety we'll do sequential here
+            # since some agents might have cross-dependencies not fully modeled yet)
+            for task in next_tasks:
+                logger.info(f"Processing task {task.id}: {task.agent_type} for {task.company_id}")
+
+                # Mark as running
+                task.status = "running"
+                task.started_at = datetime.utcnow()
+                db.commit()
+
+                try:
+                    # Run the agent
+                    result = await run_single_agent(
+                        agent_type=task.agent_type,
+                        company_id=task.company_id,
+                        period=workflow.period,
+                        db=db
+                    )
+
+                    # Mark task as completed
+                    engine.complete_task(task.id, result=result)
+
+                except Exception as e:
+                    logger.error(f"Error executing task {task.id}: {e}")
+                    engine.complete_task(task.id, error=str(e))
+
+    except Exception as e:
+        logger.error(f"Error in process_workflow_tasks: {e}")
+    finally:
+        db.close()
