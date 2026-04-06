@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; background-color:#0f172a; font-family:'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px; margin:auto; background:#1e293b; border-radius:12px; overflow:hidden; margin-top:20px;">
+  <tr><td style="background:linear-gradient(135deg,#3b82f6,#6366f1); padding:32px 24px;">
+    <h1 style="color:#fff; margin:0; font-size:22px;">Status Update</h1>
+    <p style="color:#bfdbfe; margin:8px 0 0; font-size:14px;">{{ timestamp }}</p>
+  </td></tr>
+  <tr><td style="padding:24px;">
+    <p style="color:#cbd5e1; font-size:14px; line-height:1.6;">{{ message | default('Status update from the Month-End Close Orchestrator.') }}</p>
+    <a href="http://localhost:3000" style="display:inline-block; margin-top:16px; background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px;">Open Dashboard &rarr;</a>
+  </td></tr>
+  <tr><td style="padding:16px 24px; background:#0f172a; text-align:center;">
+    <p style="color:#64748b; font-size:11px; margin:0;">Apex Capital Partners &bull; Automated Update</p>
+  </td></tr>
+</table>
+</body>
+</html>

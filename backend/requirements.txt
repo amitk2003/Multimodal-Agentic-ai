@@ -1,0 +1,47 @@
+# Core Framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+python-dotenv==1.0.1
+
+# Database
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# Redis & Task Queue
+redis==5.2.1
+celery[redis]==5.4.0
+
+# AI/Agent Stack
+langchain==0.3.14
+langchain-anthropic==0.3.4
+langchain-community==0.3.14
+langchain-core==0.3.28
+langgraph==0.2.60
+paperclip-ai==0.1.8
+langchain-google-genai==2.0.8
+
+# WebSocket
+python-socketio==5.11.4
+
+# Email
+resend==2.7.0
+
+# Templates
+jinja2==3.1.5
+
+# Data Processing
+pandas==2.2.3
+numpy==2.2.1
+openpyxl==3.1.5
+
+# PDF Export
+reportlab==4.2.5
+weasyprint==63.1
+
+# Utilities
+pydantic==2.10.4
+pydantic-settings==2.7.1
+httpx==0.28.1
+apscheduler==3.10.4

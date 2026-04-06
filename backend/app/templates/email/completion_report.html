@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0; padding:0; background-color:#0f172a; font-family:'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px; margin:auto; background:#1e293b; border-radius:12px; overflow:hidden; margin-top:20px;">
+  <tr><td style="background:linear-gradient(135deg,#22c55e,#10b981); padding:32px 24px;">
+    <h1 style="color:#fff; margin:0; font-size:22px;">&#10004; Month-End Close Complete</h1>
+    <p style="color:#bbf7d0; margin:8px 0 0; font-size:14px;">Period: {{ period }} &bull; {{ timestamp }}</p>
+  </td></tr>
+  <tr><td style="padding:24px;">
+    <h2 style="color:#e2e8f0; font-size:18px; margin:0 0 16px;">Close Process Summary</h2>
+    <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; background:#334155; border-radius:8px;">
+      <tr><td style="color:#94a3b8; font-size:13px; padding:12px;">Companies Processed</td>
+          <td style="color:#e2e8f0; font-size:16px; text-align:right; padding:12px; font-weight:600;">{{ results.companies_processed }}</td></tr>
+      <tr style="border-top:1px solid #475569;"><td style="color:#94a3b8; font-size:13px; padding:12px;">Completed At</td>
+          <td style="color:#e2e8f0; font-size:14px; text-align:right; padding:12px;">{{ results.completed_at }}</td></tr>
+      <tr style="border-top:1px solid #475569;"><td style="color:#94a3b8; font-size:13px; padding:12px;">Status</td>
+          <td style="text-align:right; padding:12px;"><span style="background:#22c55e; color:#fff; padding:2px 12px; border-radius:4px; font-size:13px;">COMPLETED</span></td></tr>
+    </table>
+    <p style="color:#cbd5e1; font-size:14px; line-height:1.6; margin-top:20px;">
+      All portfolio companies have been processed successfully. Consolidated financial statements and variance reports are now available on the dashboard.
+    </p>
+    <a href="http://localhost:3000/reports" style="display:inline-block; margin-top:16px; background:linear-gradient(135deg,#22c55e,#10b981); color:#fff; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px;">View Reports &rarr;</a>
+  </td></tr>
+  <tr><td style="padding:16px 24px; background:#0f172a; text-align:center;">
+    <p style="color:#64748b; font-size:11px; margin:0;">Apex Capital Partners &bull; Month-End Close Orchestrator</p>
+  </td></tr>
+</table>
+</body>
+</html>
