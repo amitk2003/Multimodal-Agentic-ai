@@ -150,8 +150,7 @@ We have prepared comprehensive documentation for the platform architecture, agen
 Interactive API docs available at `http://localhost:8000/docs` when running.
 
 ## Video Demo
-
-[Link to demo video - YouTube/Loom]
+https://drive.google.com/file/d/1oyxCJGskhjM4etTQ2QkBE2Hqky-Je6KP/view?usp=sharing
 
 ## Known Limitations & Future Improvements
 
