@@ -16,6 +16,8 @@ from app.models.financial import (
     TrialBalanceLine, Budget, IntercompanyTransaction,
     BankStatement, AccrualSchedule
 )
+from app.models.agent import AgentLog, WorkflowRun, AgentTask
+from app.models.notification import Notification, Report
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -245,6 +247,11 @@ class DataLoader:
 
     def clear_all(self):
         """Clear all data from database tables (for re-seeding)."""
+        self.db.query(Report).delete()
+        self.db.query(Notification).delete()
+        self.db.query(AgentLog).delete()
+        self.db.query(AgentTask).delete()
+        self.db.query(WorkflowRun).delete()
         self.db.query(AccrualSchedule).delete()
         self.db.query(BankStatement).delete()
         self.db.query(IntercompanyTransaction).delete()
