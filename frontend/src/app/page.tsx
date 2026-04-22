@@ -4,6 +4,9 @@ import { PortfolioOverview } from "@/components/dashboard/PortfolioOverview";
 import { CompanyGrid } from "@/components/dashboard/CompanyGrid";
 import { AgentStatusPanel } from "@/components/dashboard/AgentStatusPanel";
 import { AgentActivityFeed } from "@/components/dashboard/AgentActivityFeed";
+import { ConflictTracker } from "@/components/dashboard/ConflictTracker";
+import { AnomalyHeatmap } from "@/components/dashboard/AnomalyHeatmap";
+import { RiskScorePanel } from "@/components/dashboard/RiskScorePanel";
 import { fetchApi, cn } from "@/lib/utils";
 import { Loader2, AlertCircle, Play, Database, CheckCircle2 } from "lucide-react";
 
@@ -113,7 +116,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <h4 className="text-amber-500 font-semibold">Database is empty</h4>
-            <p className="text-sm text-slate-400 mt-0.5">Please click "Seed Data" to populate portfolio companies and financial records before starting the orchestration.</p>
+            <p className="text-sm text-slate-400 mt-0.5">Please click &quot;Seed Data&quot; to populate portfolio companies and financial records before starting the orchestration.</p>
           </div>
         </div>
       )}
@@ -128,11 +131,21 @@ export default function DashboardPage() {
           <CompanyGrid />
         </div>
 
-        {/* Agent Status - 1 col */}
+        {/* Agent Status + Activity - 1 col */}
         <div className="space-y-6">
           <AgentStatusPanel />
           <AgentActivityFeed maxItems={15} />
         </div>
+      </div>
+
+      {/* ── NEW PREMIUM FINTECH FEATURES ─────────────────────────────────── */}
+      {/* Row 2: Anomaly Heatmap (full width) */}
+      <AnomalyHeatmap />
+
+      {/* Row 3: Conflict Tracker + Risk Score */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ConflictTracker />
+        <RiskScorePanel />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ Scheduler Service - Runs agents autonomously via schedules and event triggers.
 """
 import logging
 import asyncio
+from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Session
 

@@ -4,6 +4,8 @@ Handles all email types: daily summaries, issue alerts, completion notices, stak
 Uses Jinja2 templates for professional email rendering.
 """
 import logging
+import asyncio
+import traceback
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -25,19 +27,26 @@ class EmailService:
     """Handles all automated email dispatch for the platform."""
 
     def __init__(self):
-        self.enabled = settings.EMAIL_ENABLED
         self.from_email = settings.EMAIL_FROM
         self._resend = None
+        self._initialized = False
 
-        if self.enabled and settings.RESEND_API_KEY:
+        if settings.RESEND_API_KEY:
             try:
                 import resend
                 resend.api_key = settings.RESEND_API_KEY
                 self._resend = resend
+                self._initialized = True
                 logger.info("Email service initialized with Resend")
             except ImportError:
-                logger.warning("Resend package not installed, emails disabled")
-                self.enabled = False
+                logger.warning("Resend package not installed, emails will be preview-logged")
+        else:
+            logger.info("No RESEND_API_KEY configured — emails will be preview-logged")
+
+    @property
+    def enabled(self) -> bool:
+        """Email is enabled when EMAIL_ENABLED=true AND Resend is initialised."""
+        return settings.EMAIL_ENABLED and self._initialized
 
     async def send_daily_summary(self, summary_data: Dict[str, Any]) -> bool:
         """Send daily executive summary email to PE partners."""
@@ -80,6 +89,56 @@ class EmailService:
             html=html_content,
         )
 
+    async def send_conflict_alert(
+        self,
+        conflict_type: str,
+        entity_a: str,
+        entity_b: str,
+        amount: float,
+        difference: float,
+        details: Optional[Dict] = None,
+    ) -> bool:
+        """
+        Send an immediate conflict alert when intercompany or transactional
+        discrepancies are detected. Falls back gracefully to issue_alert template.
+        """
+        # Try conflict-specific template first; fall back to issue_alert
+        try:
+            template = jinja_env.get_template("conflict_alert.html")
+            html_content = template.render(
+                conflict_type=conflict_type,
+                entity_a=entity_a,
+                entity_b=entity_b,
+                amount=amount,
+                difference=difference,
+                details=details or {},
+                timestamp=datetime.now().strftime("%B %d, %Y %I:%M %p"),
+            )
+        except Exception:
+            template = jinja_env.get_template("issue_alert.html")
+            html_content = template.render(
+                company_name=f"{entity_a} ↔ {entity_b}",
+                issue_type=conflict_type,
+                description=(
+                    f"Transaction conflict detected between {entity_a} and {entity_b}. "
+                    f"IC volume: ${amount:,.0f} | Imbalance: ${difference:,.0f}"
+                ),
+                severity="critical",
+                details=details or {},
+                timestamp=datetime.now().strftime("%B %d, %Y %I:%M %p"),
+            )
+
+        recipients = [settings.PE_PARTNER_EMAIL]
+        # Also notify all CFOs when there's a conflict
+        if settings.CFO_EMAILS:
+            recipients += [e.strip() for e in settings.CFO_EMAILS.split(",") if e.strip()]
+
+        return await self._send_email(
+            to=recipients,
+            subject=f"[CRITICAL CONFLICT] {conflict_type}: ${difference:,.0f} Imbalance Detected",
+            html=html_content,
+        )
+
     async def send_completion_report(
         self,
         period: str,
@@ -93,7 +152,9 @@ class EmailService:
             timestamp=datetime.now().strftime("%B %d, %Y %I:%M %p"),
         )
 
-        recipients = [settings.PE_PARTNER_EMAIL] + settings.CFO_EMAILS.split(",")
+        recipients = [settings.PE_PARTNER_EMAIL]
+        if settings.CFO_EMAILS:
+            recipients += [e.strip() for e in settings.CFO_EMAILS.split(",") if e.strip()]
         return await self._send_email(
             to=recipients,
             subject=f"[Apex Capital] Month-End Close Complete - {period}",
@@ -125,9 +186,10 @@ class EmailService:
         subject: str,
         html: str,
     ) -> bool:
-        """Internal method to send an email via Resend."""
+        """Internal method to send an email via Resend (async-safe)."""
         if not self.enabled:
-            logger.info(f"[EMAIL PREVIEW] To: {to}, Subject: {subject}")
+            # Preview mode — log but don't attempt real send
+            logger.info(f"[EMAIL PREVIEW] To: {to} | Subject: {subject}")
             logger.debug(f"[EMAIL BODY] {html[:500]}...")
             return True  # Return True in preview/test mode
 
@@ -138,11 +200,12 @@ class EmailService:
                 "subject": subject,
                 "html": html,
             }
-            response = self._resend.Emails.send(params)
-            logger.info(f"Email sent successfully: {subject} -> {to}")
+            # Resend SDK is synchronous — run in thread pool to avoid blocking event loop
+            response = await asyncio.to_thread(self._resend.Emails.send, params)
+            logger.info(f"Email sent successfully: {subject} -> {to} (id={getattr(response, 'id', 'n/a')})")
             return True
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+            logger.error(f"Failed to send email: {e}\n{traceback.format_exc()}")
             return False
 
 

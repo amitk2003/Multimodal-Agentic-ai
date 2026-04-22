@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Conflict Alert</title></head>
+<body style="margin:0; padding:0; background-color:#0f172a; font-family:'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px; margin:auto; background:#1e293b; border-radius:12px; overflow:hidden; margin-top:20px;">
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(135deg,#dc2626,#b91c1c); padding:32px 24px;">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td>
+          <h1 style="color:#fff; margin:0; font-size:22px;">&#9888;&#65039; Transaction Conflict Detected</h1>
+          <p style="color:#fca5a5; margin:8px 0 0; font-size:13px;">{{ timestamp }} &bull; Immediate Action Required</p>
+        </td>
+        <td style="text-align:right; vertical-align:top;">
+          <span style="background:#7f1d1d; color:#fca5a5; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; text-transform:uppercase;">CRITICAL</span>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Conflict Summary -->
+  <tr><td style="padding:24px 24px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a; border-radius:10px; padding:20px; border:1px solid #dc2626;">
+      <tr>
+        <td width="50%" style="vertical-align:top; padding-right:12px;">
+          <p style="color:#64748b; font-size:11px; margin:0; text-transform:uppercase; letter-spacing:0.5px;">Conflict Type</p>
+          <p style="color:#ef4444; font-size:16px; margin:6px 0 0; font-weight:700;">{{ conflict_type }}</p>
+        </td>
+        <td width="50%" style="vertical-align:top;">
+          <p style="color:#64748b; font-size:11px; margin:0; text-transform:uppercase; letter-spacing:0.5px;">Imbalance Amount</p>
+          <p style="color:#fca5a5; font-size:22px; margin:4px 0 0; font-weight:800;">${{ "{:,.0f}".format(difference) }}</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Entity Details -->
+  <tr><td style="padding:16px 24px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#1e293b; border-radius:10px; overflow:hidden; border:1px solid #334155;">
+      <tr style="background:#334155;">
+        <td style="padding:10px 16px; color:#94a3b8; font-size:12px; font-weight:600; text-transform:uppercase;">Entity / Side</td>
+        <td style="padding:10px 16px; color:#94a3b8; font-size:12px; font-weight:600; text-transform:uppercase; text-align:right;">Amount</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px; color:#e2e8f0; font-size:14px; border-bottom:1px solid #334155;">{{ entity_a }}</td>
+        <td style="padding:12px 16px; color:#4ade80; font-size:14px; font-weight:600; text-align:right; border-bottom:1px solid #334155;">${{ "{:,.0f}".format(amount) }}</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px; color:#e2e8f0; font-size:14px;">{{ entity_b }}</td>
+        <td style="padding:12px 16px; color:#f87171; font-size:14px; font-weight:600; text-align:right;">${{ "{:,.0f}".format(amount - difference) }}</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Details Table -->
+  {% if details %}
+  <tr><td style="padding:16px 24px 0;">
+    <h3 style="color:#e2e8f0; font-size:14px; margin:0 0 10px; font-weight:600;">Technical Details</h3>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a; border-radius:8px; padding:14px; border:1px solid #334155;">
+      {% for k, v in details.items() %}
+      <tr>
+        <td style="color:#64748b; font-size:12px; padding:3px 0; text-transform:capitalize;">{{ k.replace('_', ' ') }}</td>
+        <td style="color:#cbd5e1; font-size:12px; padding:3px 0; text-align:right; font-family:monospace;">{{ v }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </td></tr>
+  {% endif %}
+
+  <!-- CTA -->
+  <tr><td style="padding:24px;">
+    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
+      The Intercompany Elimination Agent has flagged a critical imbalance. 
+      The consolidation report cannot be finalized until this discrepancy is resolved. 
+      Please review all affected intercompany transactions immediately.
+    </p>
+    <a href="http://localhost:3000/agents" style="display:inline-block; background:linear-gradient(135deg,#dc2626,#b91c1c); color:#fff; padding:12px 28px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600;">
+      View in Dashboard &rarr;
+    </a>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:16px 24px; background:#0f172a; text-align:center; border-top:1px solid #1e293b;">
+    <p style="color:#475569; font-size:11px; margin:0;">Apex Capital Partners &bull; AI-Powered Month-End Close Orchestrator &bull; Automated Conflict Alert</p>
+  </td></tr>
+</table>
+</body>
+</html>

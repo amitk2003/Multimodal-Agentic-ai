@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.agents.base import BaseAgent
 from app.models.financial import IntercompanyTransaction
+from app.services.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,27 @@ class IntercompanyEliminationAgent(BaseAgent):
                 "severity": "error",
                 "data": {"receivables": total_receivables, "payables": total_payables, "difference": net_diff},
             })
+            # ── CONFLICT EMAIL ──────────────────────────────────────────────
+            # Fire an immediate email alert so partners are notified in real
+            # time about any intercompany transactional conflict.
+            try:
+                await email_service.send_conflict_alert(
+                    conflict_type="Intercompany Imbalance",
+                    entity_a="IC Receivables (all entities)",
+                    entity_b="IC Payables (all entities)",
+                    amount=total_receivables,
+                    difference=net_diff,
+                    details={
+                        "period": period,
+                        "total_receivables": total_receivables,
+                        "total_payables": total_payables,
+                        "net_difference": net_diff,
+                        "transactions_count": len(ic_transactions),
+                    },
+                )
+            except Exception as email_err:
+                logger.error(f"Failed to send IC conflict email: {email_err}")
+            # ────────────────────────────────────────────────────────────────
         else:
             actions.append(f"IC balances verified: ${total_receivables:,.0f} nets to zero")
 
