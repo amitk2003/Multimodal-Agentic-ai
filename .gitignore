@@ -36,3 +36,6 @@ assignment1_data/
 
 # Logs
 *.log
+
+Fastapi_key.pem
+
