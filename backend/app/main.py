@@ -16,7 +16,7 @@ from app.database import init_db, SessionLocal
 from app.api.companies import router as companies_router
 from app.api.agents import router as agents_router
 from app.api.reports import router as reports_router
-
+import redis
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

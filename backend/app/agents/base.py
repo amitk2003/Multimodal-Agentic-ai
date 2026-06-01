@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.agent import AgentLog
 from app.models.notification import Notification
-
+import redis
 logger = logging.getLogger(__name__)
 
 
