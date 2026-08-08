@@ -31,8 +31,13 @@ class Settings(BaseSettings):
     # OpenAI (fallback)
     OPENAI_API_KEY: Optional[str] = None
 
-    # Google Gemini (fallback)
-    GEMINI_API_KEY: Optional[str] ="AIzaSyBcMcOjTmZSbSa4hzJYIywuAF7O5Oxs_1g"
+    # Google Gemini (primary default)
+    GEMINI_API_KEY: Optional[str] = "AIzaSyBcMcOjTmZSbSa4hzJYIywuAF7O5Oxs_1g"
+
+    # Groq (fallback when Gemini quota/rate limits exceeded)
+    GROQ_API_KEY: Optional[str] = None
+   
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
 
 
     # Email - Resend

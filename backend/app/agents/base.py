@@ -22,46 +22,90 @@ import redis
 logger = logging.getLogger(__name__)
 
 
-def get_llm():
-    """Get the configured LLM instance. Tries Anthropic first, falls back to OpenAI."""
-    if settings.ANTHROPIC_API_KEY:
+def get_groq_llm(api_key: str):
+    """Instantiate a Groq LLM using ChatGroq or ChatOpenAI base_url fallback."""
+    if not api_key:
+        return None
+    try:
+        try:
+            from langchain_groq import ChatGroq
+            return ChatGroq(
+                model_name=getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile"),
+                groq_api_key=api_key,
+                temperature=settings.LLM_TEMPERATURE,
+                max_tokens=settings.LLM_MAX_TOKENS,
+            )
+        except ImportError:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                model=getattr(settings, "GROQ_MODEL", "llama-3.3-70b-versatile"),
+                api_key=api_key,
+                base_url="https://api.groq.com/openai/v1",
+                temperature=settings.LLM_TEMPERATURE,
+                max_tokens=settings.LLM_MAX_TOKENS,
+            )
+    except Exception as e:
+        logger.warning(f"Groq LLM init failed for key: {e}")
+        return None
+
+
+def get_llm_list():
+    """Get ordered list of (provider_name, llm_instance) for automatic quota/rate-limit fallback."""
+    llms = []
+
+    # 1. Anthropic Claude (if API key set)
+    if getattr(settings, "ANTHROPIC_API_KEY", None):
         try:
             from langchain_anthropic import ChatAnthropic
-            return ChatAnthropic(
+            llms.append(("Anthropic", ChatAnthropic(
                 model=settings.CLAUDE_MODEL,
                 anthropic_api_key=settings.ANTHROPIC_API_KEY,
                 temperature=settings.LLM_TEMPERATURE,
                 max_tokens=settings.LLM_MAX_TOKENS,
-            )
+            )))
         except Exception as e:
             logger.warning(f"Anthropic init failed: {e}")
 
-    if settings.OPENAI_API_KEY:
+    # 2. OpenAI (if API key set)
+    if getattr(settings, "OPENAI_API_KEY", None):
         try:
             from langchain_openai import ChatOpenAI
-            return ChatOpenAI(
+            llms.append(("OpenAI", ChatOpenAI(
                 model="gpt-4o",
                 api_key=settings.OPENAI_API_KEY,
                 temperature=settings.LLM_TEMPERATURE,
-            )
+            )))
         except Exception as e:
             logger.warning(f"OpenAI init failed: {e}")
 
-    if settings.GEMINI_API_KEY:
+    # 3. Google Gemini (primary default provider)
+    if getattr(settings, "GEMINI_API_KEY", None):
         try:
             from langchain_google_genai import ChatGoogleGenerativeAI
-            return ChatGoogleGenerativeAI(
+            llms.append(("Gemini", ChatGoogleGenerativeAI(
                 model="gemini-2.5-flash",
                 google_api_key=settings.GEMINI_API_KEY,
                 temperature=settings.LLM_TEMPERATURE,
                 max_tokens=settings.LLM_MAX_TOKENS,
-            )
+            )))
         except Exception as e:
             logger.warning(f"Gemini init failed: {e}")
 
-    # Fallback: return a mock LLM for dev/testing
-    logger.warning("No LLM API key configured - using mock responses")
-    return None
+    # 4. Groq API Key 1 (Fallback when Gemini rate/quota exceeded)
+    if getattr(settings, "GROQ_API_KEY", None):
+        groq_1 = get_groq_llm(settings.GROQ_API_KEY)
+        if groq_1:
+            llms.append(("Groq-Key-1", groq_1))
+
+    
+
+    return llms
+
+
+def get_llm():
+    """Get the primary configured LLM instance."""
+    llm_providers = get_llm_list()
+    return llm_providers[0][1] if llm_providers else None
 
 
 class SharedMemory:
@@ -238,28 +282,36 @@ class BaseAgent(ABC):
         return result or {"status": "failed", "error": "No result"}
 
     async def call_llm(self, prompt: str, system: str = "", parse_json: bool = True) -> Any:
-        """Call the LLM with a prompt and optional JSON parsing."""
-        if not self.llm:
-            # Return mock analysis when no LLM configured
+        """Call LLM with automatic failover (Gemini -> Groq Key 1 -> Groq Key 2)."""
+        llm_providers = get_llm_list()
+        if not llm_providers:
             return self._mock_llm_response(prompt)
 
-        try:
-            messages = []
-            if system:
-                messages.append(("system", system))
-            messages.append(("human", prompt))
+        messages = []
+        if system:
+            messages.append(("system", system))
+        messages.append(("human", prompt))
+        template = ChatPromptTemplate.from_messages(messages)
 
-            template = ChatPromptTemplate.from_messages(messages)
-            chain = template | self.llm
+        last_error = None
+        for name, llm_instance in llm_providers:
+            try:
+                chain = template | llm_instance
+                if parse_json:
+                    chain = chain | JsonOutputParser()
 
-            if parse_json:
-                chain = chain | JsonOutputParser()
+                response = await asyncio.to_thread(chain.invoke, {})
+                logger.info(f"LLM execution succeeded using provider: {name}")
+                return response
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    f"LLM provider [{name}] failed or rate-limited ({e}). "
+                    "Failing over to next configured LLM provider..."
+                )
 
-            response = await asyncio.to_thread(chain.invoke, {})
-            return response
-        except Exception as e:
-            logger.error(f"LLM call failed: {e}")
-            return self._mock_llm_response(prompt)
+        logger.error(f"All configured LLM providers failed. Last error: {last_error}")
+        return self._mock_llm_response(prompt)
 
     def _mock_llm_response(self, prompt: str) -> Dict:
         """Provide intelligent mock responses when no LLM is configured."""
