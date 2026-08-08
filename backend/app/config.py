@@ -15,12 +15,12 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # Database
-    DATABASE_URL: str = "postgresql://neondb_owner:npg_iz5bIjFCLr8n@ep-holy-unit-amu73g0x-pooler.c-5.us-east-1.aws.neon.tech/month-end-close?sslmode=require&channel_binding=require"
+    DATABASE_URL: str = ""
     DB_ECHO: bool = False
 
     # Redis
-    REDIS_URL: str = "redis://default:qHuQAzs1RDbLRhPAvfggL0yUtgo2lYrD@redis-18198.c244.us-east-1-2.ec2.cloud.redislabs.com:18198/0"
-    REDIS_CELERY_URL: str = "redis://default:qHuQAzs1RDbLRhPAvfggL0yUtgo2lYrD@redis-18198.c244.us-east-1-2.ec2.cloud.redislabs.com:18198/1"
+    REDIS_URL: str = ""
+    REDIS_CELERY_URL: str = ""
 
     # LLM - Anthropic Claude
     ANTHROPIC_API_KEY: str = ""
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
 
     # Google Gemini (primary default)
-    GEMINI_API_KEY: Optional[str] = "AIzaSyBcMcOjTmZSbSa4hzJYIywuAF7O5Oxs_1g"
+    GEMINI_API_KEY: Optional[str] = None
 
     # Groq (fallback when Gemini quota/rate limits exceeded)
     GROQ_API_KEY: Optional[str] = None
