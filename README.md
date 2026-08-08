@@ -88,8 +88,11 @@ pip install -r requirements.txt
 # Start Redis and PostgreSQL via Docker
 docker compose up postgres redis -d
 
-# Run FastAPI Application with WebSockets
+# Option A: Local Development (Uvicorn with auto-reload)
 uvicorn app.main:socket_app --reload --port 8000
+
+# Option B: Production Server (Gunicorn with multi-worker UvicornWorker)
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:socket_app --bind 0.0.0.0:8000
 ```
 
 #### Frontend Setup

@@ -26,5 +26,5 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run with uvicorn (production: remove --reload)
-CMD ["sh", "-c", "uvicorn app.main:socket_app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run with Gunicorn + Uvicorn worker in production
+CMD ["sh", "-c", "gunicorn -w ${WORKERS:-4} -k uvicorn.workers.UvicornWorker app.main:socket_app --bind 0.0.0.0:${PORT:-8000}"]
