@@ -38,4 +38,7 @@ assignment1_data/
 *.log
 
 Fastapi_key.pem
+sample.cpp
+sample.exe
+
 

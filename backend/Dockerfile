@@ -27,4 +27,4 @@ COPY . .
 EXPOSE 8000
 
 # Run with uvicorn (production: remove --reload)
-CMD ["uvicorn", "app.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:socket_app --host 0.0.0.0 --port ${PORT:-8000}"]
