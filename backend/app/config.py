@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     MONITORING_INTERVAL_MINUTES: int = 5
 
     # WebSocket
-    WS_CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
+    WS_CORS_ORIGINS: str = "https://multimodal-agentic-ai.vercel.app"
 
     # Data
     DATA_DIR: str = "./data"
