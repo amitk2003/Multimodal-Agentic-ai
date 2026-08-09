@@ -2,6 +2,15 @@
 
 @import "tailwindcss";
 
+/* ── Custom breakpoint for extra-small screens ─────────────────── */
+@custom-media --xs (min-width: 480px);
+
+/* ── Prevent horizontal scroll on mobile ───────────────────────── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 :root {
   --bg-primary: #030712;
   --bg-secondary: #0f172a;
