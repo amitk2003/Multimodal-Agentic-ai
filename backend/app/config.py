@@ -15,22 +15,14 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # Database
-    DATABASE_URL: str = ""
+    DATABASE_URL: str
     DB_ECHO: bool = False
 
     # Redis
     REDIS_URL: str = ""
     REDIS_CELERY_URL: str = ""
 
-    # LLM - Anthropic Claude
-    ANTHROPIC_API_KEY: str = ""
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
-    LLM_TEMPERATURE: float = 0.1
-    LLM_MAX_TOKENS: int = 4096
-
-    # OpenAI (fallback)
-    OPENAI_API_KEY: Optional[str] = None
-
+   
     # Google Gemini (primary default)
     GEMINI_API_KEY: Optional[str] = None
 
@@ -38,10 +30,12 @@ class Settings(BaseSettings):
     GROQ_API_KEY: Optional[str] = None
    
     GROQ_MODEL: str = "openai/gpt-oss-20b"
+    LLM_TEMPERATURE:float=0.1
+    LLM_MAX_TOKENS:int=4096
 
 
     # Email - Resend
-    RESEND_API_KEY: str = ""
+    RESEND_API_KEY: str
     EMAIL_FROM: str = "noreply@apexcapital.com"
     EMAIL_ENABLED: bool = False
 
